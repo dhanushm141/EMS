@@ -19,8 +19,6 @@ const Update = () => {
 
   const [errors, setErrors] = useState({});
 
-  const { empName, empEmail, empDOB, empMobile, empGender, empNative } = employee;
-
   useEffect(() => {
     loadEmployee();
   }, []);
@@ -31,6 +29,11 @@ const Update = () => {
       setEmployee(result.data);
     } catch (error) {
       console.error("Error loading employee:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Failed to Load',
+        text: 'Unable to load employee data.',
+      });
     }
   };
 
@@ -41,18 +44,17 @@ const Update = () => {
 
   const validate = () => {
     const temp = {};
+    const mobilePattern = /^\d{10}$/;
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!empName.trim()) temp.empName = "Name is required";
-    if (!empEmail.trim()) {
-      temp.empEmail = "Email is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(empEmail)) {
-      temp.empEmail = "Invalid email format";
-    }
+    if (!employee.empName.trim()) temp.empName = "Name is required";
+    if (!employee.empEmail.trim()) temp.empEmail = "Email is required";
+    else if (!emailPattern.test(employee.empEmail)) temp.empEmail = "Invalid email";
 
-    if (!empMobile.match(/^\d{10}$/)) temp.empMobile = "Mobile must be 10 digits";
-    if (!empDOB) temp.empDOB = "Date of birth is required";
-    if (!empGender) temp.empGender = "Gender is required";
-    if (!empNative.trim()) temp.empNative = "Native place is required";
+    if (!mobilePattern.test(employee.empMobile)) temp.empMobile = "Mobile must be 10 digits";
+    if (!employee.empDOB) temp.empDOB = "Date of birth is required";
+    if (!employee.empGender) temp.empGender = "Gender is required";
+    if (!employee.empNative.trim()) temp.empNative = "Native place is required";
 
     setErrors(temp);
     return Object.keys(temp).length === 0;
@@ -61,10 +63,17 @@ const Update = () => {
   const onSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validate()) return;
+    if (!validate()) {
+      console.log("Validation failed", errors);
+      return;
+    }
 
     try {
-      await axios.put(`http://localhost:8081/employee/update/${id}`, employee);
+      console.log("Sending PUT request:", employee);
+
+      const response = await axios.put(`http://localhost:8081/employee/update/${id}`, employee);
+      console.log("Response:", response.data);
+
       Swal.fire({
         icon: 'success',
         title: 'Updated',
@@ -73,11 +82,11 @@ const Update = () => {
       });
       navigate("/");
     } catch (error) {
-      console.error("Error updating employee:", error);
+      console.error("Update error:", error.response || error.message);
       Swal.fire({
         icon: 'error',
-        title: 'Failed',
-        text: 'Error updating employee. Please try again.',
+        title: 'Update Failed',
+        text: 'Could not update employee. Please try again.',
       });
     }
   };
@@ -88,14 +97,14 @@ const Update = () => {
         <div className="col-md-7">
           <div className="card shadow-lg p-4 border-0 rounded-4">
             <h3 className="text-center mb-4 text-primary">Edit Employee</h3>
-            <form onSubmit={onSubmit}>
+            <form onSubmit={onSubmit} noValidate>
               <div className="mb-3">
                 <label className="form-label">Employee Name</label>
                 <input
                   type="text"
                   className={`form-control ${errors.empName ? "is-invalid" : ""}`}
                   name="empName"
-                  value={empName}
+                  value={employee.empName}
                   onChange={onInputChange}
                 />
                 {errors.empName && <div className="invalid-feedback">{errors.empName}</div>}
@@ -107,40 +116,37 @@ const Update = () => {
                   type="email"
                   className={`form-control ${errors.empEmail ? "is-invalid" : ""}`}
                   name="empEmail"
-                  value={empEmail}
+                  value={employee.empEmail}
                   onChange={onInputChange}
                 />
                 {errors.empEmail && <div className="invalid-feedback">{errors.empEmail}</div>}
               </div>
 
-             
               <div className="mb-3">
                 <label className="form-label">Mobile Number</label>
                 <input
                   type="tel"
                   className={`form-control ${errors.empMobile ? "is-invalid" : ""}`}
                   name="empMobile"
-                  value={empMobile}
+                  value={employee.empMobile}
                   onChange={onInputChange}
                   maxLength={10}
                 />
                 {errors.empMobile && <div className="invalid-feedback">{errors.empMobile}</div>}
               </div>
 
-              
               <div className="mb-3">
                 <label className="form-label">Date of Birth</label>
                 <input
                   type="date"
                   className={`form-control ${errors.empDOB ? "is-invalid" : ""}`}
                   name="empDOB"
-                  value={empDOB}
+                  value={employee.empDOB}
                   onChange={onInputChange}
                 />
                 {errors.empDOB && <div className="invalid-feedback">{errors.empDOB}</div>}
               </div>
 
-              
               <div className="mb-3">
                 <label className="form-label">Gender</label>
                 <div className="form-check form-check-inline ms-2">
@@ -149,7 +155,7 @@ const Update = () => {
                     className="form-check-input"
                     name="empGender"
                     value="Male"
-                    checked={empGender === "Male"}
+                    checked={employee.empGender === "Male"}
                     onChange={onInputChange}
                   />
                   <label className="form-check-label">Male</label>
@@ -160,7 +166,7 @@ const Update = () => {
                     className="form-check-input"
                     name="empGender"
                     value="Female"
-                    checked={empGender === "Female"}
+                    checked={employee.empGender === "Female"}
                     onChange={onInputChange}
                   />
                   <label className="form-check-label">Female</label>
@@ -168,20 +174,18 @@ const Update = () => {
                 {errors.empGender && <div className="text-danger mt-1">{errors.empGender}</div>}
               </div>
 
-              
               <div className="mb-3">
                 <label className="form-label">Native Place</label>
                 <input
                   type="text"
                   className={`form-control ${errors.empNative ? "is-invalid" : ""}`}
                   name="empNative"
-                  value={empNative}
+                  value={employee.empNative}
                   onChange={onInputChange}
                 />
                 {errors.empNative && <div className="invalid-feedback">{errors.empNative}</div>}
               </div>
 
-              
               <div className="d-flex justify-content-center gap-4 mt-4">
                 <button type="submit" className="btn btn-success px-4">
                   <FaSave className="me-2" /> Update
