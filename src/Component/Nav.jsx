@@ -20,7 +20,7 @@ const Nav = () => {
         <div className="collapse navbar-collapse justify-content-end" id="navbarNav">
           <ul className="navbar-nav">
             <li className="nav-item">
-              <NavLink className="nav-link" to="/add">Add Employee</NavLink>
+              {/* <NavLink className="nav-link" to="/add">Add Employee</NavLink> */}
             </li>
           </ul>
         </div>

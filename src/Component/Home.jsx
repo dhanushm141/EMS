@@ -44,7 +44,10 @@ const Home = () => {
   };
 
   return (
-    <div className='container'>
+    <div className='container'> <br />
+    <Link to="/add" className="btn btn-primary btn-lm mx-3">
+                  Add employee
+                </Link>
       <h2 className="mt-4 mb-4">Employee List</h2>
       <table className="table table-bordered shadow">
         <thead className="table-dark">
