@@ -5,6 +5,7 @@ import Home from './Component/Home'
 import {BrowserRouter,Routes,Route} from 'react-router-dom'
 import Add from './Pages/Add'
 import Update from './Pages/Update'
+import View from './Pages/View'
 
 const App = () => {
   return (
@@ -13,9 +14,10 @@ const App = () => {
  <BrowserRouter>
  <Nav></Nav>
   <Routes>
-   <Route exact path="/" element={<Add></Add>} />
-   <Route exact path="/view" element={<Home></Home>}/>
-   <Route exact path="/edituser" element={<Update></Update>}/>
+   <Route exact path="/" element={<Home></Home>} />
+   <Route exact path="/add" element={<Add></Add>}></Route>
+   <Route exact path="/edituser/:id" element={<Update />} />
+   <Route exact path="/viewuser/:empId" element={<View />} />
   </Routes>
  </BrowserRouter>
   </>

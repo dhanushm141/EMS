@@ -1,116 +1,205 @@
-import React, { useEffect, useState } from 'react'
-import axios from "axios"
-import Swal from 'sweetalert2'
-import { useNavigate, useParams } from 'react-router'
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import Swal from 'sweetalert2';
+import { useNavigate, useParams } from 'react-router-dom';
+import { FaSave, FaTimes } from 'react-icons/fa';
 
-const Update= () => {
- 
-const {id} =useParams();
-  let navigate=useNavigate()
+const Update = () => {
+  const navigate = useNavigate();
+  const { id } = useParams();
 
-  const handleClick=()=>{ 
-    Swal.fire({
-      text: "Data Updated Successfully",
-      icon: "success"
-    });
-  }
+  const [employee, setEmployee] = useState({
+    empName: "",
+    empEmail: "",
+    empDOB: "",
+    empMobile: "",
+    empGender: "",
+    empNative: ""
+  });
 
-  const [user,setUser]=useState({
-       empid:"",
-       empname:"",
-       empsal:"",
-       empmail:"",
-       empdob:"",
-       empnum:"",
-       gender:""
-  })
+  const [errors, setErrors] = useState({});
 
-  const{empid,empname,empsal,empmail,empdob,empnum,gender}=user
+  const { empName, empEmail, empDOB, empMobile, empGender, empNative } = employee;
 
-  const onInputChange=(e)=>{
-  setUser({...user,[e.target.name]:e.target.value });
-  }
+  useEffect(() => {
+    loadEmployee();
+  }, []);
 
-  useEffect(()=>{
+  const loadEmployee = async () => {
+    try {
+      const result = await axios.get(`http://localhost:8081/employee/${id}`);
+      setEmployee(result.data);
+    } catch (error) {
+      console.error("Error loading employee:", error);
+    }
+  };
 
-    loadUser()
+  const onInputChange = (e) => {
+    setEmployee({ ...employee, [e.target.name]: e.target.value });
+    setErrors({ ...errors, [e.target.name]: "" });
+  };
 
-  },[]);
+  const validate = () => {
+    const temp = {};
 
+    if (!empName.trim()) temp.empName = "Name is required";
+    if (!empEmail.trim()) {
+      temp.empEmail = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(empEmail)) {
+      temp.empEmail = "Invalid email format";
+    }
 
-const onSubmit=async (e)=>{
-   e.preventDefault();
-   await axios.put(`http://localhost:8085/updates`,user)
-   navigate("/view");
-}
+    if (!empMobile.match(/^\d{10}$/)) temp.empMobile = "Mobile must be 10 digits";
+    if (!empDOB) temp.empDOB = "Date of birth is required";
+    if (!empGender) temp.empGender = "Gender is required";
+    if (!empNative.trim()) temp.empNative = "Native place is required";
 
-const loadUser=async ()=>{
-   const result =await axios.get(`http://localhost:8085/fetchy/${id}`);
-    setUser(result.data)
-}
+    setErrors(temp);
+    return Object.keys(temp).length === 0;
+  };
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!validate()) return;
+
+    try {
+      await axios.put(`http://localhost:8081/employee/update/${id}`, employee);
+      Swal.fire({
+        icon: 'success',
+        title: 'Updated',
+        text: 'Employee updated successfully!',
+        confirmButtonColor: '#3085d6'
+      });
+      navigate("/");
+    } catch (error) {
+      console.error("Error updating employee:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Failed',
+        text: 'Error updating employee. Please try again.',
+      });
+    }
+  };
 
   return (
-   <div className='container'>
-<div className='row'>
-<div className='col-md-6 offset-md-3 border rounded p-4 mt-2 shadow' >
-<h2>Update form</h2>
+    <div className="container mt-5">
+      <div className="row justify-content-center">
+        <div className="col-md-7">
+          <div className="card shadow-lg p-4 border-0 rounded-4">
+            <h3 className="text-center mb-4 text-primary">Edit Employee</h3>
+            <form onSubmit={onSubmit}>
+              <div className="mb-3">
+                <label className="form-label">Employee Name</label>
+                <input
+                  type="text"
+                  className={`form-control ${errors.empName ? "is-invalid" : ""}`}
+                  name="empName"
+                  value={empName}
+                  onChange={onInputChange}
+                />
+                {errors.empName && <div className="invalid-feedback">{errors.empName}</div>}
+              </div>
 
-<form onSubmit={(e)=>onSubmit(e)}>
-<div className='mb-3'>
-<label htmlFor="empid" className='form-label'>Employee Id</label>
-<input type={"text"} name="empid" id="" required className='form-control'  placeholder='Enter your Id' value={empid} onChange={(e)=>onInputChange(e)}/>
-</div>
+              <div className="mb-3">
+                <label className="form-label">Employee Email</label>
+                <input
+                  type="email"
+                  className={`form-control ${errors.empEmail ? "is-invalid" : ""}`}
+                  name="empEmail"
+                  value={empEmail}
+                  onChange={onInputChange}
+                />
+                {errors.empEmail && <div className="invalid-feedback">{errors.empEmail}</div>}
+              </div>
 
+             
+              <div className="mb-3">
+                <label className="form-label">Mobile Number</label>
+                <input
+                  type="tel"
+                  className={`form-control ${errors.empMobile ? "is-invalid" : ""}`}
+                  name="empMobile"
+                  value={empMobile}
+                  onChange={onInputChange}
+                  maxLength={10}
+                />
+                {errors.empMobile && <div className="invalid-feedback">{errors.empMobile}</div>}
+              </div>
 
-<div className='mb-3'>
-<label htmlFor="empname" className='form-label'>Employee Name</label>
-<input type={"text"} name="empname" id="" required className='form-control' placeholder='Enter your Name' value={empname} onChange={(e)=>onInputChange(e)}/>
-</div>
+              
+              <div className="mb-3">
+                <label className="form-label">Date of Birth</label>
+                <input
+                  type="date"
+                  className={`form-control ${errors.empDOB ? "is-invalid" : ""}`}
+                  name="empDOB"
+                  value={empDOB}
+                  onChange={onInputChange}
+                />
+                {errors.empDOB && <div className="invalid-feedback">{errors.empDOB}</div>}
+              </div>
 
+              
+              <div className="mb-3">
+                <label className="form-label">Gender</label>
+                <div className="form-check form-check-inline ms-2">
+                  <input
+                    type="radio"
+                    className="form-check-input"
+                    name="empGender"
+                    value="Male"
+                    checked={empGender === "Male"}
+                    onChange={onInputChange}
+                  />
+                  <label className="form-check-label">Male</label>
+                </div>
+                <div className="form-check form-check-inline">
+                  <input
+                    type="radio"
+                    className="form-check-input"
+                    name="empGender"
+                    value="Female"
+                    checked={empGender === "Female"}
+                    onChange={onInputChange}
+                  />
+                  <label className="form-check-label">Female</label>
+                </div>
+                {errors.empGender && <div className="text-danger mt-1">{errors.empGender}</div>}
+              </div>
 
-<div className='mb-3'>
-<label htmlFor="empsal" className='form-label'>Employee Salary</label>
-<input type={"text"} name="empsal" id="" required className='form-control' placeholder='Enter your Salary' value={empsal} onChange={(e)=>onInputChange(e)}/>
-</div>
+              
+              <div className="mb-3">
+                <label className="form-label">Native Place</label>
+                <input
+                  type="text"
+                  className={`form-control ${errors.empNative ? "is-invalid" : ""}`}
+                  name="empNative"
+                  value={empNative}
+                  onChange={onInputChange}
+                />
+                {errors.empNative && <div className="invalid-feedback">{errors.empNative}</div>}
+              </div>
 
-
-<div className='mb-3'>
-<label htmlFor="empmail" className='form-label'>Employee E-Mail</label>
-<input type={"text"} name="empmail" id="" required className='form-control' placeholder='Enter your E-Mail' value={empmail} onChange={(e)=>onInputChange(e)}/>
-</div>
-
-
-<div className='mb-3'>
-<label htmlFor="empdob" className='form-label'>Employee DOB</label>
-<input type={"date"} name="empdob" id="" required className='form-control' placeholder='Enter your Date-of-Birth' value={empdob} onChange={(e)=>onInputChange(e)}/>
-</div>
-
-
-<div className='mb-3'>
-<label htmlFor="empnum" className='form-label'>Employee Mobile Number</label>
-<input type={"tel"} name="empnum" id="" required className='form-control' placeholder='Enter your Mobile Number' maxLength={"10"} value={empnum} onChange={(e)=>onInputChange(e)}/>
-</div>
-
-
-<div>
-<label htmlFor="gender" className='form-label'>Employee Gender</label> <br />
-<input type={'radio'} name="gender" id="" required value={"Male"} onChange={(e)=>onInputChange(e)}/>Male <br />
-<input type={'radio'} name='gender'  required value={"Female"} onChange={(e)=>onInputChange(e)} />Female
-</div><br />
-
-
-<div className="d-flex justify-content-center align-item-center gap-5" style={{ width: '100%' }}>
-      <button className="btn btn-success" type='submit' onClick={handleClick}>Submit</button>
-      <button className="btn btn-danger" type='reset'>Cancel</button>
+              
+              <div className="d-flex justify-content-center gap-4 mt-4">
+                <button type="submit" className="btn btn-success px-4">
+                  <FaSave className="me-2" /> Update
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary px-4"
+                  onClick={() => navigate("/")}
+                >
+                  <FaTimes className="me-2" /> Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
-    </form>
-</div>
+  );
+};
 
-</div>
-
-   </div>
-    
-  )
-}
-
-export default Update
+export default Update;

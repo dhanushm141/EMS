@@ -1,23 +1,32 @@
-import React from 'react'
-import { Link } from 'react-router'
+import React from 'react';
+import { Link, NavLink } from 'react-router-dom';
 
 const Nav = () => {
   return (
-    <div>
-<nav className="navbar navbar-expand-lg  navbar-dark bg-primary">
-    <div className="container-fluid">
-    <a className="navbar-brand" href="#">Employee Details</a>
-    <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-      <span className="navbar-toggler-icon"></span>
-    </button>
+    <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+      <div className="container">
+        <Link className="navbar-brand fw-bold" to="/">
+          Employee Management
+        </Link>
+        <button
+          className="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span className="navbar-toggler-icon"></span>
+        </button>
 
-   <Link to="/view"><button className='btn btn-outline-light'>View Details</button></Link>
-   
-  </div>
-</nav>
+        <div className="collapse navbar-collapse justify-content-end" id="navbarNav">
+          <ul className="navbar-nav">
+            <li className="nav-item">
+              <NavLink className="nav-link" to="/add">Add Employee</NavLink>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  );
+};
 
-    </div>
-  )
-}
-
-export default Nav
+export default Nav;

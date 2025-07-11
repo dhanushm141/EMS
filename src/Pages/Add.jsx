@@ -1,103 +1,207 @@
-import React, { useState } from 'react'
-import axios from "axios"
-import Swal from 'sweetalert2'
-import { useNavigate } from 'react-router'
+import React, { useState } from 'react';
+import axios from 'axios';
+import Swal from 'sweetalert2';
+import { useNavigate } from 'react-router-dom';
+import { FaCheck, FaTimes } from 'react-icons/fa';
 
 const Add = () => {
- 
+  const navigate = useNavigate();
 
-  let navigate=useNavigate()
+  const [user, setUser] = useState({
+    empName: "",
+    empEmail: "",
+    empDOB: "",
+    empMobile: "",
+    empGender: "",
+    empNative: ""
+  });
 
-  const handleClick=()=>{ 
-    Swal.fire({
-      text: "Data inserted Successfully",
-      icon: "success"
-    });
-  }
+  const handleReset = () => {
+  setUser({
+    empName: "",
+    empEmail: "",
+    empDOB: "",
+    empMobile: "",
+    empGender: "",
+    empNative: ""
+  });
+  setErrors({});
+};
 
-  const [user,setUser]=useState({
-       empid:"",
-       empname:"",
-       empsal:"",
-       empmail:"",
-       empdob:"",
-       empnum:"",
-       gender:""
-  })
+  const [errors, setErrors] = useState({});
 
-  const{empid,empname,empsal,empmail,empdob,empnum,gender}=user
+  const { empName, empEmail, empDOB, empMobile, empGender, empNative } = user;
 
-  const onInputChange=(e)=>{
-  setUser({...user,[e.target.name]:e.target.value });
-  }
-const onSubmit=async (e)=>{
-   e.preventDefault();
-   await axios.post("http://localhost:8085/insert",user)
-   navigate("/view");
-}
+  const onInputChange = (e) => {
+    setUser({ ...user, [e.target.name]: e.target.value });
+    setErrors({ ...errors, [e.target.name]: "" });
+  };
+
+  const validate = () => {
+    let temp = {};
+    if (!empName.trim()) temp.empName = "Name is required";
+    if (!empMobile.match(/^\d{10}$/)) temp.empMobile = "Mobile must be 10 digits";
+    if (!empEmail.trim()) {
+      temp.empEmail = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(empEmail)) {
+      temp.empEmail = "Invalid email format";
+    }
+    if (!empDOB) temp.empDOB = "DOB is required";
+    if (!empGender) temp.empGender = "Gender is required";
+    if (!empNative.trim()) temp.empNative = "Native is required";
+
+    setErrors(temp);
+    return Object.keys(temp).length === 0;
+  };
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    if (!validate()) return;
+
+    try {
+      await axios.post("http://localhost:8081/employee/insert", user);
+      Swal.fire({ icon: 'success', text: 'Data inserted successfully' });
+      navigate("/");
+    } catch (error) {
+      const message = error.response?.data || "Something went wrong!";
+      if (message.includes("Email")) {
+        setErrors((prev) => ({ ...prev, empEmail: "Email already exists" }));
+      } else if (message.includes("Mobile")) {
+        setErrors((prev) => ({ ...prev, empMobile: "Mobile number already exists" }));
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Insertion Failed',
+          text: message
+        });
+      }
+    }
+  };
 
   return (
-   <div className='container'>
-<div className='row'>
-<div className='col-md-6 offset-md-3 border rounded p-4 mt-2 shadow' >
-<h2>Registration form</h2>
+    <div className="container my-5">
+      <div className="row justify-content-center">
+        <div className="col-lg-7 col-md-8">
+          <div className="card shadow-lg border-0 rounded-4">
+            <div className="card-header bg-primary text-white rounded-top-4">
+              <h4 className="mb-0 py-2 text-center">Employee Registration</h4>
+            </div>
+            <div className="card-body">
+              <form onSubmit={onSubmit}>
+                
+                <div className="mb-3">
+                  <label className="form-label">Employee Name</label>
+                  <input
+                    type="text"
+                    name="empName"
+                    className="form-control"
+                    placeholder="Enter your name"
+                    value={empName}
+                    onChange={onInputChange}
+                  />
+                  {errors.empName && <div className="text-danger small">{errors.empName}</div>}
+                </div>
 
-<form onSubmit={(e)=>onSubmit(e)}>
-<div className='mb-3'>
-<label htmlFor="empid" className='form-label'>Employee Id</label>
-<input type={"text"} name="empid" id="" required className='form-control' placeholder='Enter your Id' value={empid} onChange={(e)=>onInputChange(e)}/>
-</div>
+                
+                <div className="mb-3">
+                  <label className="form-label">Mobile Number</label>
+                  <input
+                    type="tel"
+                    name="empMobile"
+                    className="form-control"
+                    placeholder="Enter 10-digit mobile number"
+                    maxLength="10"
+                    value={empMobile}
+                    onChange={onInputChange}
+                  />
+                  {errors.empMobile && <div className="text-danger small">{errors.empMobile}</div>}
+                </div>
 
+                
+                <div className="mb-3">
+                  <label className="form-label">Email</label>
+                  <input
+                    type="email"
+                    name="empEmail"
+                    className="form-control"
+                    placeholder="Enter your email"
+                    value={empEmail}
+                    onChange={onInputChange}
+                  />
+                  {errors.empEmail && <div className="text-danger small">{errors.empEmail}</div>}
+                </div>
 
-<div className='mb-3'>
-<label htmlFor="empname" className='form-label'>Employee Name</label>
-<input type={"text"} name="empname" id="" required className='form-control' placeholder='Enter your Name' value={empname} onChange={(e)=>onInputChange(e)}/>
-</div>
+                
+                <div className="mb-3">
+                  <label className="form-label">Date of Birth</label>
+                  <input
+                    type="date"
+                    name="empDOB"
+                    className="form-control"
+                    value={empDOB}
+                    onChange={onInputChange}
+                  />
+                  {errors.empDOB && <div className="text-danger small">{errors.empDOB}</div>}
+                </div>
 
+                
+                <div className="mb-3">
+                  <label className="form-label d-block">Gender</label>
+                  <div className="form-check form-check-inline">
+                    <input
+                      type="radio"
+                      name="empGender"
+                      value="Male"
+                      className="form-check-input"
+                      checked={empGender === "Male"}
+                      onChange={onInputChange}
+                    />
+                    <label className="form-check-label">Male</label>
+                  </div>
+                  <div className="form-check form-check-inline">
+                    <input
+                      type="radio"
+                      name="empGender"
+                      value="Female"
+                      className="form-check-input"
+                      checked={empGender === "Female"}
+                      onChange={onInputChange}
+                    />
+                    <label className="form-check-label">Female</label>
+                  </div>
+                  {errors.empGender && <div className="text-danger small mt-1">{errors.empGender}</div>}
+                </div>
 
-<div className='mb-3'>
-<label htmlFor="empsal" className='form-label'>Employee Salary</label>
-<input type={"text"} name="empsal" id="" required className='form-control' placeholder='Enter your Salary' value={empsal} onChange={(e)=>onInputChange(e)}/>
-</div>
+                
+                <div className="mb-3">
+                  <label className="form-label">Native Place</label>
+                  <input
+                    type="text"
+                    name="empNative"
+                    className="form-control"
+                    placeholder="Enter your native place"
+                    value={empNative}
+                    onChange={onInputChange}
+                  />
+                  {errors.empNative && <div className="text-danger small">{errors.empNative}</div>}
+                </div>
 
-
-<div className='mb-3'>
-<label htmlFor="empmail" className='form-label'>Employee E-Mail</label>
-<input type={"text"} name="empmail" id="" required className='form-control' placeholder='Enter your E-Mail' value={empmail} onChange={(e)=>onInputChange(e)}/>
-</div>
-
-
-<div className='mb-3'>
-<label htmlFor="empdob" className='form-label'>Employee DOB</label>
-<input type={"date"} name="empdob" id="" required className='form-control' placeholder='Enter your Date-of-Birth' value={empdob} onChange={(e)=>onInputChange(e)}/>
-</div>
-
-
-<div className='mb-3'>
-<label htmlFor="empnum" className='form-label'>Employee Mobile Number</label>
-<input type={"tel"} name="empnum" id="" required className='form-control' placeholder='Enter your Mobile Number' maxLength={"10"} value={empnum} onChange={(e)=>onInputChange(e)}/>
-</div>
-
-
-<div>
-<label htmlFor="gender" className='form-label'>Employee Gender</label> <br />
-<input type={'radio'} name="gender" id="" required value={"Male"} onChange={(e)=>onInputChange(e)}/>Male <br />
-<input type={'radio'} name='gender'  required value={"Female"} onChange={(e)=>onInputChange(e)} />Female
-</div><br />
-
-
-<div className="d-flex justify-content-center align-item-center gap-5" style={{ width: '100%' }}>
-      <button className="btn btn-success" type='submit' onClick={handleClick}>Submit</button>
-      <button className="btn btn-danger" type='reset'>Cancel</button>
+                
+                <div className="d-flex justify-content-center gap-3 mt-4">
+                  <button className="btn btn-success px-4" type="submit">
+                    <FaCheck className="me-2" /> Submit
+                  </button>
+                   <button className="btn btn-outline-danger px-4" type="button" onClick={handleReset}>
+                     <FaTimes className="me-2" /> Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    </form>
-</div>
+  );
+};
 
-</div>
-
-   </div>
-    
-  )
-}
-
-export default Add
+export default Add;
