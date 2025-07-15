@@ -59,7 +59,7 @@ const Add = () => {
     if (!validate()) return;
 
     try {
-      await axios.post("http://localhost:8081/employee/insert", user);
+      await axios.post(`${import.meta.env.VITE_API_URL}/employee/insert`, user);
       Swal.fire({ icon: 'success', text: 'Data inserted successfully' });
       navigate("/");
     } catch (error) {

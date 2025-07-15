@@ -25,7 +25,7 @@ const Update = () => {
 
   const loadEmployee = async () => {
     try {
-      const result = await axios.get(`http://localhost:8081/employee/${id}`);
+      const result = await axios.get(`${import.meta.env.VITE_API_URL}/employee/${id}`);
       setEmployee(result.data);
     } catch (error) {
       console.error("Error loading employee:", error);
@@ -71,7 +71,7 @@ const Update = () => {
     try {
       console.log("Sending PUT request:", employee);
 
-      const response = await axios.put(`http://localhost:8081/employee/update/${id}`, employee);
+      const response = await axios.put(`${import.meta.env.VITE_API_URL}/employee/update/${id}`, employee);
       console.log("Response:", response.data);
 
       Swal.fire({

@@ -13,7 +13,7 @@ const Home = () => {
 
   const loadEmployees = async () => {
     try {
-      const result = await axios.get("http://localhost:8081/employee/all");
+     const result = await axios.get(`${import.meta.env.VITE_API_URL}/employee/all`);
       setEmployees(result.data);
     } catch (error) {
       console.error("Error loading employees:", error);
@@ -33,7 +33,7 @@ const Home = () => {
 
     if (confirm.isConfirmed) {
       try {
-        await axios.delete(`http://localhost:8081/employee/delete/${id}`);
+        await axios.delete(`${import.meta.env.VITE_API_URL}/employee/delete/${id}`);
         Swal.fire('Deleted!', 'Employee has been deleted.', 'success');
         loadEmployees();
       } catch (error) {
